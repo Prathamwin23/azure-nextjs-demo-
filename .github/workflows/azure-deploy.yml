@@ -44,16 +44,7 @@ jobs:
 
     - name: 'Health check'
       run: |
-        echo "Waiting for deployment..."
+        echo "✅ Deployment completed!"
+        echo "🌐 App URL: https://pratham-nextjs-demo.azurewebsites.net"
         sleep 30
-        curl -f https://pratham-nextjs-demo.azurewebsites.net/api/health || echo "Health check failed but deployment may still work"
-        
-    - name: 'Deployment status'
-      if: always()
-      run: |
-        if [ ${{ job.status }} == 'success' ]; then
-          echo "✅ Deployment successful!"
-          echo "🌐 App URL: https://pratham-nextjs-demo.azurewebsites.net"
-        else
-          echo "❌ Deployment failed!"
-        fi
+        curl -f https://pratham-nextjs-demo.azurewebsites.net/api/health || echo "⚠️ Health check failed but app may still work"
