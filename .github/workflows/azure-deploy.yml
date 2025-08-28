@@ -1,5 +1,4 @@
 name: Deploy to Azure App Service
-
 on:
   push:
     branches: [ master ]
@@ -18,43 +17,50 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
+      
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
-
+        cache: 'yarn'
+        
     - name: Install dependencies
       run: |
         npm install -g yarn
-        yarn install
-
+        yarn install --frozen-lockfile
+        
     - name: Run linting
       run: yarn lint
-
+      
     - name: Build application
       run: yarn build
       env:
         NODE_ENV: production
-        MONGODB_URI: mongodb+srv://demouser:DemoPassword123@azure-demo-cluster.po7gael.mongodb.net/?retryWrites=true&w=majority&appName=azure-demo-cluster
-        JWT_SECRET: pratham-super-secret-jwt-key-for-azure-demo-2024-random-string-123456789
-
+        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        
     - name: Run tests (if available)
-      run: yarn test --if-present
-
+      run: |
+        if grep -q '"test"' package.json; then
+          echo "Running tests..."
+          yarn test
+        else
+          echo "No test script found, skipping tests"
+        fi
+        
     - name: Deploy to Azure App Service
       uses: azure/webapps-deploy@v3
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-
+        
     - name: Health check
       run: |
         echo "Waiting for deployment to complete..."
         sleep 30
         curl -f https://pratham-nextjs-demo-hbhsepg2dwenf9bf.centralindia-0.azurewebsites.net/api/health || exit 1
-
+        
     - name: Notify deployment status
       if: always()
       run: |
