@@ -2,9 +2,9 @@ name: Deploy to Azure App Service
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 env:
   AZURE_WEBAPP_NAME: pratham-nextjs-demo    # Your actual Azure App Service name
@@ -23,23 +23,24 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
 
     - name: Install dependencies
-      run: npm ci
+      run: |
+        npm install -g yarn
+        yarn install
 
     - name: Run linting
-      run: npm run lint
+      run: yarn lint
 
     - name: Build application
-      run: npm run build
+      run: yarn build
       env:
         NODE_ENV: production
-        MONGODB_URI: ${{ secrets.MONGODB_URI }}
-        JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        MONGODB_URI: mongodb+srv://demouser:DemoPassword123@azure-demo-cluster.po7gael.mongodb.net/?retryWrites=true&w=majority&appName=azure-demo-cluster
+        JWT_SECRET: pratham-super-secret-jwt-key-for-azure-demo-2024-random-string-123456789
 
     - name: Run tests (if available)
-      run: npm test --if-present
+      run: yarn test --if-present
 
     - name: Deploy to Azure App Service
       uses: azure/webapps-deploy@v3
