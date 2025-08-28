@@ -22,12 +22,12 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
-        cache: 'yarn'
+        # Remove cache: 'yarn' since you don't have yarn.lock
         
     - name: Install dependencies
       run: |
         npm install -g yarn
-        yarn install --frozen-lockfile
+        yarn install
         
     - name: Run linting
       run: yarn lint
