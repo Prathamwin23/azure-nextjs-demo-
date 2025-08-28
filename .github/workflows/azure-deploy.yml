@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  AZURE_WEBAPP_NAME: your-app-name    # Replace with your Azure App Service name
+  AZURE_WEBAPP_NAME: pratham-nextjs-demo    # Your actual Azure App Service name
   AZURE_WEBAPP_PACKAGE_PATH: '.'
   NODE_VERSION: '18.x'
 
@@ -35,6 +35,8 @@ jobs:
       run: npm run build
       env:
         NODE_ENV: production
+        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
     - name: Run tests (if available)
       run: npm test --if-present
@@ -50,14 +52,14 @@ jobs:
       run: |
         echo "Waiting for deployment to complete..."
         sleep 30
-        curl -f ${{ secrets.AZURE_WEBAPP_URL }}/api/health || exit 1
+        curl -f https://pratham-nextjs-demo-hbhsepg2dwenf9bf.centralindia-0.azurewebsites.net/api/health || exit 1
 
     - name: Notify deployment status
       if: always()
       run: |
         if [ ${{ job.status }} == 'success' ]; then
           echo "✅ Deployment successful!"
-          echo "🌐 App URL: ${{ secrets.AZURE_WEBAPP_URL }}"
+          echo "🌐 App URL: https://pratham-nextjs-demo-hbhsepg2dwenf9bf.centralindia-0.azurewebsites.net"
         else
           echo "❌ Deployment failed!"
         fi
