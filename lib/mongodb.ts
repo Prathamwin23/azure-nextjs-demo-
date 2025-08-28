@@ -6,17 +6,10 @@ if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
 }
 
-declare global {
-  var mongoose: {
-    conn: any;
-    promise: any;
-  } | undefined;
-}
-
-let cached: any = global.mongoose;
+let cached: any = (global as any).mongoose;
 
 if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
+  cached = (global as any).mongoose = { conn: null, promise: null };
 }
 
 async function dbConnect() {
