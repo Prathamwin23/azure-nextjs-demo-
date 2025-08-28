@@ -22,8 +22,9 @@ async function dbConnect() {
       bufferCommands: false,
     };
 
+    // Return the connection, not the mongoose instance
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      return mongoose;
+      return mongoose.connection; // Return connection object
     });
   }
 
