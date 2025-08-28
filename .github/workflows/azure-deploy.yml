@@ -7,6 +7,7 @@ on:
 env:
   AZURE_WEBAPP_NAME: pratham-nextjs-demo
   NODE_VERSION: '20.x'
+  MONGODB_URI: ${{ secrets.MONGODB_URI }}
 
 jobs:
   build-and-deploy:
