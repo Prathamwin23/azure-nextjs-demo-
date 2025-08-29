@@ -32,7 +32,7 @@ export default function Home() {
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            🚀 Azure DevOps Demo - Updated V2.0
+            🚀 Pratham Azur DevOps Demo
           </h1>
           <p className="text-xl text-gray-600 mb-8">
             Next.js Application with CI/CD Pipeline
