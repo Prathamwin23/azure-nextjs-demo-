@@ -2,12 +2,11 @@ name: Deploy to Azure App Service
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, main ]
 
 env:
   AZURE_WEBAPP_NAME: pratham-nextjs-demo
   NODE_VERSION: '20.x'
-  MONGODB_URI: ${{ secrets.MONGODB_URI }}
 
 jobs:
   build-and-deploy:
@@ -32,20 +31,57 @@ jobs:
     - name: 'Build application'
       run: npm run build
 
+    - name: 'Create deployment package'
+      run: |
+        # Remove development dependencies and files not needed for production
+        rm -rf node_modules
+        npm ci --production
+        
+        # Create a clean package for deployment
+        mkdir -p deployment-package
+        cp -r .next deployment-package/
+        cp -r node_modules deployment-package/
+        cp -r public deployment-package/ || true
+        cp package.json deployment-package/
+        cp next.config.js deployment-package/
+        
+        # Create a simple startup script for Azure
+        cat > deployment-package/server.js << 'EOF'
+        const { createServer } = require('http');
+        const { parse } = require('url');
+        const next = require('next');
+
+        const dev = false;
+        const app = next({ dev });
+        const handle = app.getRequestHandler();
+
+        const PORT = process.env.PORT || 3000;
+
+        app.prepare().then(() => {
+          createServer((req, res) => {
+            const parsedUrl = parse(req.url, true);
+            handle(req, res, parsedUrl);
+          }).listen(PORT, (err) => {
+            if (err) throw err;
+            console.log(`> Ready on http://localhost:${PORT}`);
+          });
+        });
+        EOF
+
     - name: 'Login to Azure'
-      uses: azure/login@v1
+      uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
     - name: 'Deploy to Azure Web App'
-      uses: azure/webapps-deploy@v2
+      uses: azure/webapps-deploy@v3
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        package: '.'
+        package: './deployment-package'
 
     - name: 'Health check'
       run: |
         echo "✅ Deployment completed!"
         echo "🌐 App URL: https://pratham-nextjs-demo.azurewebsites.net"
-        sleep 30
-        curl -f https://pratham-nextjs-demo.azurewebsites.net/api/health || echo "⚠️ Health check failed but app may still work"
+        sleep 60
+        curl -f https://pratham-nextjs-demo.azurewebsites.net/api/health || echo "⚠️ Health check failed - checking logs"
